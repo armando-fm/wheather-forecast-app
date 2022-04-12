@@ -1,0 +1,76 @@
+<div class="row center-xs margin-y-30">
+  <div class="col-xs-8">
+    <div class="row">
+      <form>
+        <div class="col-xs-10">
+          <div class="row">
+            <div class="col-xs-10">
+              <mat-autocomplete #auto="matAutocomplete">
+                <mat-option
+                  *ngFor="let city of cities | async"
+                  [value]="selectedCity"
+                  (onSelectionChange)="onSelectCitySearchResult(city)">
+                  {{city.name}} - {{city.country}}
+                </mat-option>
+              </mat-autocomplete>
+              <mat-form-field class="search-form-field" appearance="fill">
+                <mat-label>Search</mat-label>
+                <input
+                  matInput
+                  type="text"
+                  name="search"
+                  [formControl]="searchCityControl"
+                  [matAutocomplete]="auto"
+                />
+                <button
+                  *ngIf="searchCityControl.value && searchCityControl.value.length > 0; else searchEmpty"
+                  matSuffix
+                  mat-icon-button
+                  aria-label="Clear"
+                  (click)="clearSearch()"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
+                <ng-template #searchEmpty>
+                  <button matSuffix mat-icon-button aria-label="Search">
+                    <mat-icon>search</mat-icon>
+                  </button>
+                </ng-template>
+              </mat-form-field>
+            </div>
+            <div class="col-xs-2">
+              <mat-form-field appearance="fill">
+                <mat-label>Filter Mode</mat-label>
+                <mat-select name="filterMode" [(ngModel)]="selectedMode">
+                  <mat-option *ngFor="let mode of modes" [value]="mode">
+                    {{mode | titlecase}}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+    </form>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div *ngIf="selectedMode && selectedMode === 'hourly'" class="col-xs-offset-1 col-xs-10">
+    <table mat-table [dataSource]="citiesHourly" class="mat-elevation-z8">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef> City Name </th>
+        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+      </ng-container>
+
+      <ng-container *ngFor="let column of getColumnsToDisplay(displayedColumnsHourly); index as i">
+        <ng-container [matColumnDef]="column">
+          <th mat-header-cell *matHeaderCellDef> {{column}} </th>
+          <td mat-cell *matCellDef="let element"> {{element['key'+i]}} ° </td>
+        </ng-container>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumnsHourly"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumnsHourly;"></tr>
+    </table>
+  </div>
+</div>

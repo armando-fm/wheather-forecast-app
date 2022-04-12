@@ -1,3 +1,5 @@
 export const environment = {
-  production: true
+  production: true,
+  // @ts-ignore
+  openWeatherPubKey: window['env']['openWeatherPubKey'] || ''
 };
