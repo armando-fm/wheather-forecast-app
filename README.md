@@ -10,4 +10,4 @@ First create a `.env` file based on the .env.example
 
 Add your Open Weather API Key to the `.env` file
 
-Run `ocker-compose up --build` to build and  start the docker container. Navigate to `http://localhost:8000/`. 
+Run `docker-compose up --build` to build and  start the docker container. Navigate to `http://localhost:8000/`. 
