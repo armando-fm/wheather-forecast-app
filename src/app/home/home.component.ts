@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { GeolocationService } from 'src/app/shared/services/geolocation.service';
 import { City } from 'src/app/shared/models/city';
 
-import { getCitiesHourly } from '../store/selectors/'
+import { getCitiesHourly, getCitiesDaily } from '../store/selectors/'
 
 import { select, Store } from '@ngrx/store'
 import { State } from '../store/reducers';
@@ -28,9 +28,13 @@ export class HomeComponent implements OnInit {
   searchCityControl = new FormControl();
 
   displayedColumnsHourly: string[] = ['name'];
+  displayedColumnsDaily: string[] = ['name'];
 
   citiesHourly$: Observable<City[]> | undefined;
   citiesHourly: City[] = []
+
+  citiesDaily$: Observable<City[]> | undefined;
+  citiesDaily: City[] = []
 
   constructor(private readonly store: Store<State>, private geolocationService: GeolocationService,
     private weatherForecastService: WeatherForecastService) {
@@ -46,6 +50,7 @@ export class HomeComponent implements OnInit {
     });
 
     this.citiesHourly$ = this.store.pipe(select(getCitiesHourly));
+    this.citiesDaily$ = this.store.pipe(select(getCitiesDaily));
 
     /*
     TODO: improve this
@@ -54,6 +59,12 @@ export class HomeComponent implements OnInit {
     this.citiesHourly$.subscribe({
         next: values => {
           this.citiesHourly = values
+        }
+      });
+
+      this.citiesDaily$.subscribe({
+        next: values => {
+          this.citiesDaily = values
         }
       })
   }
@@ -72,30 +83,43 @@ export class HomeComponent implements OnInit {
       this.weatherForecastService.getHourlyWeatherForecast(city).subscribe({
         next: response => {
           this.displayedColumnsHourly = ['name'];
-          const forecastData = this.getXStepsItems(response.hourly);
-
+          const forecastData = this.getHourlyWeatherItems(response.hourly);
           //populate table headers
+          const cityCopy: City = {...city}
           for (let i = 0; i < forecastData.length; i++) {
-            const time = this.formatTime(forecastData[i].dt);
+            const time = this.getTime(forecastData[i].dt);
             this.displayedColumnsHourly.push(time);
             // TODO: find a cleaner way to do this
             const key = `key${i}`;
-            // @ts-ignore
-            city[key] = forecastData[i].temp;
+            cityCopy[key] = forecastData[i].temp;
           }
-
-          this.store.dispatch(addCityHourly({city}));
+          this.store.dispatch(addCityHourly({city: cityCopy}));
         },
         error: (err) => console.error(err)
       });
     } else {
-      // TODO: call api and store city with respective weather forecast
-      this.store.dispatch(addCityDaily({city}))
+      this.weatherForecastService.getDailyWeatherForecast(city).subscribe({
+        next: response => {
+          this.displayedColumnsHourly = ['name'];
+          const forecastData = this.getDailyWeatherItems(response.daily);
+          const cityCopy: City = {...city}
+          //populate table headers
+          for (let i = 0; i < forecastData.length; i++) {
+            const dayOfWeek = this.getDayOfWeek(forecastData[i].dt);
+            this.displayedColumnsDaily.push(dayOfWeek);
+            // TODO: find a cleaner way to do this
+            const key = `key${i}`;
+            cityCopy[key] = forecastData[i].temp.max;
+          }
+          this.store.dispatch(addCityDaily({city: cityCopy}));
+        },
+        error: (err) => console.error(err)
+      });
     }
   }
 
 
-  getXStepsItems(arr: []): any[] {
+  getHourlyWeatherItems(arr: []): any[] {
     const result: [] = [];
 
     let counter = 3;
@@ -106,7 +130,11 @@ export class HomeComponent implements OnInit {
     return result;
   }
 
-  formatTime(unixValue: number) {
+  getDailyWeatherItems(arr: []): any[] {
+    return arr.slice(0, 7);
+  }
+
+  getTime(unixValue: number) {
 
     const date = new Date(unixValue * 1000);
     // Hours part from the timestamp
@@ -118,6 +146,24 @@ export class HomeComponent implements OnInit {
     const formattedTime = hours + ':' + minutes.substring(-2);
 
     return formattedTime;
+  }
+
+  getDayOfWeek(unixValue: number) {
+    const date = new Date(unixValue * 1000);
+    // Hours part from the timestamp
+    const weekDay = date.getDay();
+
+    switch (weekDay) {
+      case 0: return 'su';
+      case 1: return 'mo';
+      case 2: return 'tu';
+      case 3: return 'we';
+      case 4: return 'th';
+      case 5: return 'fr';
+      case 6: return 'sa';
+    }
+
+    return '';
   }
 
   getColumnsToDisplay(columns: string[]) {

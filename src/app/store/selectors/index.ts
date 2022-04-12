@@ -9,16 +9,7 @@ export const getCitiesHourly = createSelector(
   (state: State) => state.citiesHourly
 );
 
-
-// export interface CityFeatureState {
-//   citiesHourly: City[];
-//   citiesDaily: City[];
-// }
-
-// export interface AppState {
-//   citiesFeature: CityFeatureState;
-// }
-
-
-// export const selectFeatureCitiesDaily = (state: AppState) => state.citiesFeature.citiesDaily;
-// export const selectFeatureCitiesHourly = (state: AppState) => state.citiesFeature.citiesHourly;
+export const getCitiesDaily = createSelector(
+  getCityState,
+  (state: State) => state.citiesDaily
+);

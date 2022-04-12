@@ -3,4 +3,5 @@ export class City {
   lat: number | undefined;
   lon: number | undefined;
   country!: string;
+  [k: string]: any;
 }
