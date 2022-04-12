@@ -89,9 +89,7 @@ export class HomeComponent implements OnInit {
           for (let i = 0; i < forecastData.length; i++) {
             const time = this.getTime(forecastData[i].dt);
             this.displayedColumnsHourly.push(time);
-            // TODO: find a cleaner way to do this
-            const key = `key${i}`;
-            cityCopy[key] = forecastData[i].temp;
+            cityCopy[time] = forecastData[i].temp;
           }
           this.store.dispatch(addCityHourly({city: cityCopy}));
         },
@@ -100,16 +98,15 @@ export class HomeComponent implements OnInit {
     } else {
       this.weatherForecastService.getDailyWeatherForecast(city).subscribe({
         next: response => {
-          this.displayedColumnsHourly = ['name'];
+
+          this.displayedColumnsDaily = ['name'];
           const forecastData = this.getDailyWeatherItems(response.daily);
           const cityCopy: City = {...city}
           //populate table headers
           for (let i = 0; i < forecastData.length; i++) {
             const dayOfWeek = this.getDayOfWeek(forecastData[i].dt);
             this.displayedColumnsDaily.push(dayOfWeek);
-            // TODO: find a cleaner way to do this
-            const key = `key${i}`;
-            cityCopy[key] = forecastData[i].temp.max;
+            cityCopy[dayOfWeek] = forecastData[i].temp.max;
           }
           this.store.dispatch(addCityDaily({city: cityCopy}));
         },
